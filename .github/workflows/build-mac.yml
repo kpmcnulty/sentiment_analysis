@@ -34,50 +34,41 @@ jobs:
       run: |
         python build_executable.py
     
+    - name: Check build output structure
+      run: |
+        echo "Contents of dist folder:"
+        ls -la dist/
+        echo "Contents of SentimentAnalysisTool folder:"
+        ls -la dist/SentimentAnalysisTool/ || echo "Folder not found"
+    
     - name: Ad-hoc sign the app
       run: |
-        # Sign the app to prevent "damaged" errors
-        codesign --force --deep --sign - "dist/SentimentAnalysisTool/SentimentAnalysisTool.app"
-        codesign --force --deep --sign - "dist/SentimentAnalysisTool/_internal/Python.framework"
-    
-    - name: Install create-dmg
-      run: |
-        brew install create-dmg
-    
-    - name: Create DMG
-      run: |
-        # Create DMG without specific app positioning since we're packaging a folder
-        create-dmg \
-          --volname "Sentiment Analysis Tool" \
-          --window-pos 200 120 \
-          --window-size 600 450 \
-          --icon-size 100 \
-          --text-size 14 \
-          --app-drop-link 425 190 \
-          --no-internet-enable \
-          --skip-jenkins \
-          "SentimentAnalysisTool-Universal.dmg" \
-          "dist/SentimentAnalysisTool" || true
-        
-        # Check if DMG was created despite error
-        if [ -f "SentimentAnalysisTool-Universal.dmg" ]; then
-          echo "DMG created successfully"
-        else
-          echo "DMG creation failed"
-          exit 1
+        # Find and sign the actual app
+        if [ -f "dist/SentimentAnalysisTool.app/Contents/MacOS/SentimentAnalysisTool" ]; then
+          codesign --force --deep --sign - "dist/SentimentAnalysisTool.app"
+        elif [ -f "dist/SentimentAnalysisTool/SentimentAnalysisTool" ]; then
+          # Sign the executable if no .app bundle
+          codesign --force --sign - "dist/SentimentAnalysisTool/SentimentAnalysisTool"
         fi
     
-    - name: Upload DMG
+    - name: Create ZIP archive
+      run: |
+        cd dist
+        zip -r ../SentimentAnalysisTool-macOS-Intel.zip SentimentAnalysisTool
+        cd ..
+        echo "Created ZIP archive"
+    
+    - name: Upload ZIP
       uses: actions/upload-artifact@v4
       with:
-        name: SentimentAnalysisTool-Universal-dmg
-        path: SentimentAnalysisTool-Universal.dmg
+        name: SentimentAnalysisTool-macOS-Intel
+        path: SentimentAnalysisTool-macOS-Intel.zip
         retention-days: 30
     
     - name: Create Release (on tag push)
       uses: softprops/action-gh-release@v2
       if: startsWith(github.ref, 'refs/tags/')
       with:
-        files: SentimentAnalysisTool-Universal.dmg
+        files: SentimentAnalysisTool-macOS-Intel.zip
         draft: false
         prerelease: false
