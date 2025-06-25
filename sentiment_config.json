@@ -1,0 +1,15 @@
+{
+  "topic_modeling": {
+    "n_topics": 5,
+    "sentiment_model": "nlptown/bert-base-multilingual-uncased-sentiment"
+  },
+  "analysis": {
+    "min_text_length": 50,
+    "focus_entity": "Vandenberg",
+    "context_window": 200
+  },
+  "files": {
+    "input_directory": "articles/results/20250624_080818",
+    "output_directory": "articles/reports/20250624_080818"
+  }
+}

@@ -1,0 +1,22 @@
+# Core requirements
+numpy
+pandas
+matplotlib
+scikit-learn
+transformers
+torch
+tqdm
+
+newspaper3k
+GoogleNews
+requests
+beautifulsoup4
+lxml[html_clean]
+
+bertopic
+sentence-transformers
+umap-learn
+hdbscan
+wordcloud
+pyinstaller
+torch

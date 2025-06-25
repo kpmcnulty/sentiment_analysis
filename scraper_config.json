@@ -1,0 +1,40 @@
+{
+  "search_terms": [
+    "Vandenberg Space Force Base"
+  ],
+  "max_results": 100,
+  "period": "1y",
+  "blocked_domains": [
+    "spaceforce.mil",
+    "vandenberg.spaceforce.mil",
+    "defense.gov",
+    "youtube.com",
+    "nasa.gov"
+  ],
+  "google_news": {
+    "max_pages": 10,
+    "request_timeout": 30
+  },
+  "output_directory": "articles/results/20250624_080818",
+  "language": "en",
+  "extraction": {
+    "min_text_length": 150,
+    "min_paragraph_length": 40,
+    "min_bs4_text_length": 100,
+    "redirect_limit": 30
+  },
+  "logging": {
+    "level": "DEBUG",
+    "truncate_html_snippet": 500
+  },
+  "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
+  "initial_delay": 5,
+  "page_delay": 5,
+  "delay_between_downloads": 1,
+  "newspaper_options": {
+    "keep_article_html": true,
+    "fetch_images": false,
+    "memoize_articles": true
+  },
+  "max_consecutive_no_relevant": 5
+}

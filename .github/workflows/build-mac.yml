@@ -1,0 +1,79 @@
+name: Build macOS DMG (Intel + Apple Silicon)
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:  # Allow manual trigger from GitHub UI
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: macos-12
+            arch: intel
+            name: Intel
+          - os: macos-14
+            arch: arm64
+            name: Apple Silicon
+    
+    runs-on: ${{ matrix.os }}
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pyinstaller
+    
+    - name: Download NLTK data
+      run: |
+        python -c "import nltk; nltk.download('punkt'); nltk.download('punkt_tab'); nltk.download('stopwords'); nltk.download('wordnet')"
+    
+    - name: Build executable
+      run: |
+        python build_executable.py
+    
+    - name: Install create-dmg
+      run: |
+        brew install create-dmg
+    
+    - name: Create DMG
+      run: |
+        create-dmg \
+          --volname "Sentiment Analysis Tool" \
+          --window-pos 200 120 \
+          --window-size 600 450 \
+          --icon-size 100 \
+          --text-size 14 \
+          --icon "SentimentAnalysisTool" 175 190 \
+          --hide-extension "SentimentAnalysisTool.app" \
+          --app-drop-link 425 190 \
+          --no-internet-enable \
+          "SentimentAnalysisTool-${{ matrix.name }}.dmg" \
+          "dist/SentimentAnalysisTool"
+    
+    - name: Upload DMG
+      uses: actions/upload-artifact@v3
+      with:
+        name: SentimentAnalysisTool-${{ matrix.name }}-dmg
+        path: SentimentAnalysisTool-${{ matrix.name }}.dmg
+        retention-days: 30
+    
+    - name: Create Release (on tag push)
+      uses: softprops/action-gh-release@v1
+      if: startsWith(github.ref, 'refs/tags/')
+      with:
+        files: SentimentAnalysisTool-${{ matrix.name }}.dmg
+        draft: false
+        prerelease: false
