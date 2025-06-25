@@ -9,17 +9,7 @@ on:
 
 jobs:
   build:
-    strategy:
-      matrix:
-        include:
-          - os: macos-11
-            arch: intel
-            name: Intel
-          - os: macos-14
-            arch: arm64
-            name: Apple Silicon
-    
-    runs-on: ${{ matrix.os }}
+    runs-on: macos-11  # Intel runner that works for all Macs
     
     steps:
     - name: Checkout code
@@ -60,11 +50,11 @@ jobs:
           --app-drop-link 425 190 \
           --no-internet-enable \
           --skip-jenkins \
-          "SentimentAnalysisTool-${{ matrix.name }}.dmg" \
+          "SentimentAnalysisTool-Universal.dmg" \
           "dist/SentimentAnalysisTool" || true
         
         # Check if DMG was created despite error
-        if [ -f "SentimentAnalysisTool-${{ matrix.name }}.dmg" ]; then
+        if [ -f "SentimentAnalysisTool-Universal.dmg" ]; then
           echo "DMG created successfully"
         else
           echo "DMG creation failed"
@@ -74,14 +64,14 @@ jobs:
     - name: Upload DMG
       uses: actions/upload-artifact@v4
       with:
-        name: SentimentAnalysisTool-${{ matrix.name }}-dmg
-        path: SentimentAnalysisTool-${{ matrix.name }}.dmg
+        name: SentimentAnalysisTool-Universal-dmg
+        path: SentimentAnalysisTool-Universal.dmg
         retention-days: 30
     
     - name: Create Release (on tag push)
       uses: softprops/action-gh-release@v2
       if: startsWith(github.ref, 'refs/tags/')
       with:
-        files: SentimentAnalysisTool-${{ matrix.name }}.dmg
+        files: SentimentAnalysisTool-Universal.dmg
         draft: false
         prerelease: false
