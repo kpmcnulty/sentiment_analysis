@@ -12,7 +12,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: macos-12
+          - os: macos-11
             arch: intel
             name: Intel
           - os: macos-14
@@ -50,18 +50,26 @@ jobs:
     
     - name: Create DMG
       run: |
+        # Create DMG without specific app positioning since we're packaging a folder
         create-dmg \
           --volname "Sentiment Analysis Tool" \
           --window-pos 200 120 \
           --window-size 600 450 \
           --icon-size 100 \
           --text-size 14 \
-          --icon "SentimentAnalysisTool" 175 190 \
-          --hide-extension "SentimentAnalysisTool.app" \
           --app-drop-link 425 190 \
           --no-internet-enable \
+          --skip-jenkins \
           "SentimentAnalysisTool-${{ matrix.name }}.dmg" \
-          "dist/SentimentAnalysisTool"
+          "dist/SentimentAnalysisTool" || true
+        
+        # Check if DMG was created despite error
+        if [ -f "SentimentAnalysisTool-${{ matrix.name }}.dmg" ]; then
+          echo "DMG created successfully"
+        else
+          echo "DMG creation failed"
+          exit 1
+        fi
     
     - name: Upload DMG
       uses: actions/upload-artifact@v4
