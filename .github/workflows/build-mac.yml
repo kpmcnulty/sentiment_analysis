@@ -9,7 +9,7 @@ on:
 
 jobs:
   build:
-    runs-on: macos-12  # Intel runner with better availability
+    runs-on: macos-13  # Intel runner - Ventura
     
     steps:
     - name: Checkout code
