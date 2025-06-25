@@ -34,6 +34,12 @@ jobs:
       run: |
         python build_executable.py
     
+    - name: Ad-hoc sign the app
+      run: |
+        # Sign the app to prevent "damaged" errors
+        codesign --force --deep --sign - "dist/SentimentAnalysisTool/SentimentAnalysisTool.app"
+        codesign --force --deep --sign - "dist/SentimentAnalysisTool/_internal/Python.framework"
+    
     - name: Install create-dmg
       run: |
         brew install create-dmg
