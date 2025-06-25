@@ -53,10 +53,18 @@ jobs:
     
     - name: Create ZIP archive
       run: |
+        # Remove quarantine attributes before zipping
+        xattr -cr dist/SentimentAnalysisTool
+        
+        # Copy installer script into the app folder
+        cp install_macos.sh dist/SentimentAnalysisTool/
+        chmod +x dist/SentimentAnalysisTool/install_macos.sh
+        
+        # Create ZIP
         cd dist
         zip -r ../SentimentAnalysisTool-macOS-Intel.zip SentimentAnalysisTool
         cd ..
-        echo "Created ZIP archive"
+        echo "Created ZIP archive with installer"
     
     - name: Upload ZIP
       uses: actions/upload-artifact@v4
