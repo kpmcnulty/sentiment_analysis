@@ -40,7 +40,8 @@ def create_macos_app_bundle():
     launcher_script = f"""#!/bin/bash
 # Get the directory where this .app is located
 APP_DIR="$(dirname "$(dirname "$(dirname "$0")")")"
-EXECUTABLE_DIR="$APP_DIR/SentimentAnalysisTool"
+# The executable is in the same directory as the .app
+EXECUTABLE_DIR="$APP_DIR"
 
 # Change to the executable directory and run
 cd "$EXECUTABLE_DIR"
@@ -89,8 +90,15 @@ exec "./SentimentAnalysisTool"
         f.write(info_plist)
     
     print(f"✅ Minimal macOS app wrapper created: {app_bundle_path}")
-    print(f"   App points to directory: {onedir_path}")
-    print("   Users can double-click the .app, files stay in the directory!")
+    
+    # Move the .app bundle inside the SentimentAnalysisTool folder
+    final_app_path = os.path.join(onedir_path, "SentimentAnalysisTool.app")
+    if os.path.exists(final_app_path):
+        shutil.rmtree(final_app_path)
+    shutil.move(app_bundle_path, final_app_path)
+    
+    print(f"✅ Moved app bundle to: {final_app_path}")
+    print("   Users can double-click the .app, everything stays together!")
     
     return True
 
@@ -197,7 +205,8 @@ def build_executable():
         '--collect-all=newspaper',
         '--collect-all=beautifulsoup4',
         '--collect-all=lxml',
-        '--collect-all=newspaper',
+        '--collect-all=dateparser',
+        '--collect-all=GoogleNews',
         
         # Collect newspaper resources specifically
         '--collect-data=newspaper',
