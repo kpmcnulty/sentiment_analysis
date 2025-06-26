@@ -17,10 +17,10 @@ fi
 # Get the directory where this script is located
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-# Check if we're in the right place (SentimentAnalysisTool folder should be here)
-if [ ! -d "$SCRIPT_DIR/SentimentAnalysisTool.app" ] && [ ! -f "$SCRIPT_DIR/SentimentAnalysisTool" ]; then
-    echo "Error: Cannot find SentimentAnalysisTool in current directory."
-    echo "Please run this installer from inside the unzipped folder."
+# Check if SentimentAnalysisTool folder exists next to this script
+if [ ! -d "$SCRIPT_DIR/SentimentAnalysisTool" ]; then
+    echo "Error: Cannot find SentimentAnalysisTool folder."
+    echo "Please run this installer from the unzipped folder."
     exit 1
 fi
 
@@ -39,10 +39,10 @@ if [[ ! $REPLY =~ ^[Yy]$ ]]; then
     exit 0
 fi
 
-# Remove quarantine attributes from current folder
+# Remove quarantine attributes from the SentimentAnalysisTool folder
 echo ""
 echo "Removing security restrictions (requires password)..."
-sudo xattr -cr "$SCRIPT_DIR"
+sudo xattr -cr "$SCRIPT_DIR/SentimentAnalysisTool"
 
 # Check if app already exists in Applications
 if [ -d "/Applications/SentimentAnalysisTool" ]; then
@@ -58,27 +58,12 @@ if [ -d "/Applications/SentimentAnalysisTool" ]; then
     fi
 fi
 
-# Copy entire folder to Applications (preserving structure)
+# Move the SentimentAnalysisTool folder to Applications
 echo "Installing to Applications folder..."
-sudo cp -R "$SCRIPT_DIR" "/Applications/SentimentAnalysisTool"
+sudo mv "$SCRIPT_DIR/SentimentAnalysisTool" "/Applications/SentimentAnalysisTool"
 
-# Find the actual app path
-if [ -f "/Applications/SentimentAnalysisTool/SentimentAnalysisTool.app/Contents/MacOS/SentimentAnalysisTool" ]; then
-    APP_PATH="/Applications/SentimentAnalysisTool/SentimentAnalysisTool.app"
-elif [ -f "/Applications/SentimentAnalysisTool/SentimentAnalysisTool" ]; then
-    # Create a simple launcher script if no .app bundle exists
-    echo "Creating app launcher..."
-    sudo tee "/Applications/SentimentAnalysisTool/Launch Sentiment Analysis Tool.command" > /dev/null <<EOL
-#!/bin/bash
-cd "/Applications/SentimentAnalysisTool"
-./SentimentAnalysisTool
-EOL
-    sudo chmod +x "/Applications/SentimentAnalysisTool/Launch Sentiment Analysis Tool.command"
-    APP_PATH="/Applications/SentimentAnalysisTool/Launch Sentiment Analysis Tool.command"
-else
-    echo "Warning: Could not find executable. You may need to launch manually."
-    APP_PATH="/Applications/SentimentAnalysisTool"
-fi
+# The app path is always the .app inside the folder
+APP_PATH="/Applications/SentimentAnalysisTool/SentimentAnalysisTool.app"
 
 # Create desktop alias
 echo "Creating desktop shortcut..."
@@ -93,14 +78,24 @@ fi
 osascript <<EOD
 tell application "Finder"
     try
-        make alias file to POSIX file "$APP_PATH" at POSIX file "$DESKTOP"
+        set appFile to POSIX file "$APP_PATH" as alias
+        make alias file to appFile at desktop
         set name of result to "Sentiment Analysis Tool"
-    on error
-        -- If alias fails, create a symbolic link instead
-        do shell script "ln -s '$APP_PATH' '$DESKTOP/Sentiment Analysis Tool'"
+    on error errorMessage
+        display dialog "Could not create desktop shortcut: " & errorMessage
     end try
 end tell
 EOD
+
+# Verify alias was created
+if [ ! -e "$DESKTOP/Sentiment Analysis Tool" ]; then
+    echo "Note: Desktop shortcut creation failed. You can manually:"
+    echo "1. Open Applications folder"
+    echo "2. Find SentimentAnalysisTool folder"
+    echo "3. Right-click SentimentAnalysisTool.app"
+    echo "4. Select 'Make Alias'"
+    echo "5. Drag alias to Desktop"
+fi
 
 echo ""
 echo "=================================="

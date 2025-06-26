@@ -34,35 +34,15 @@ jobs:
       run: |
         python build_executable.py
     
-    - name: Check build output structure
+    - name: Create ZIP archive with installer
       run: |
-        echo "Contents of dist folder:"
-        ls -la dist/
-        echo "Contents of SentimentAnalysisTool folder:"
-        ls -la dist/SentimentAnalysisTool/ || echo "Folder not found"
-    
-    - name: Ad-hoc sign the app
-      run: |
-        # Find and sign the actual app
-        if [ -f "dist/SentimentAnalysisTool.app/Contents/MacOS/SentimentAnalysisTool" ]; then
-          codesign --force --deep --sign - "dist/SentimentAnalysisTool.app"
-        elif [ -f "dist/SentimentAnalysisTool/SentimentAnalysisTool" ]; then
-          # Sign the executable if no .app bundle
-          codesign --force --sign - "dist/SentimentAnalysisTool/SentimentAnalysisTool"
-        fi
-    
-    - name: Create ZIP archive
-      run: |
-        # Remove quarantine attributes before zipping
-        xattr -cr dist/SentimentAnalysisTool
+        # Copy installer script into the dist folder (not inside SentimentAnalysisTool)
+        cp install_macos.sh dist/
+        chmod +x dist/install_macos.sh
         
-        # Copy installer script into the app folder
-        cp install_macos.sh dist/SentimentAnalysisTool/
-        chmod +x dist/SentimentAnalysisTool/install_macos.sh
-        
-        # Create ZIP
+        # Create ZIP with both the folder and installer at root level
         cd dist
-        zip -r ../SentimentAnalysisTool-macOS-Intel.zip SentimentAnalysisTool
+        zip -r ../SentimentAnalysisTool-macOS-Intel.zip SentimentAnalysisTool install_macos.sh
         cd ..
         echo "Created ZIP archive with installer"
     
