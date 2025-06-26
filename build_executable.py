@@ -296,6 +296,9 @@ def build_executable():
         # Add runtime hook for NLTK
         '--runtime-hook=pyi_rth_nltk.py',
         
+        # Add runtime hook for SSL certificates
+        '--runtime-hook=pyi_rth_ssl.py',
+        
         # Entry point
         'sentiment_gui.py'
     ]

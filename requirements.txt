@@ -20,3 +20,4 @@ hdbscan
 wordcloud
 pyinstaller
 torch
+certifi
