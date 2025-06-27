@@ -39,9 +39,11 @@ def create_macos_app_bundle():
     # Create a launcher script that runs the actual executable
     launcher_script = f"""#!/bin/bash
 # Get the directory where this .app is located
-APP_DIR="$(dirname "$(dirname "$(dirname "$0")")")"
-# The executable is in the same directory as the .app
-EXECUTABLE_DIR="$APP_DIR"
+# $0 = /path/to/SentimentAnalysisTool.app/Contents/MacOS/SentimentAnalysisTool
+# We need to go up 3 levels to get to the .app, then up 1 more to get to the folder
+APP_CONTENTS="$(dirname "$(dirname "$0")")"  # .../SentimentAnalysisTool.app/Contents
+APP_BUNDLE="$(dirname "$APP_CONTENTS")"      # .../SentimentAnalysisTool.app
+EXECUTABLE_DIR="$(dirname "$APP_BUNDLE")"    # .../SentimentAnalysisTool (the folder)
 
 # Set up environment
 export DYLD_LIBRARY_PATH="$EXECUTABLE_DIR/_internal:$DYLD_LIBRARY_PATH"
