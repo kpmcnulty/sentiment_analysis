@@ -30,6 +30,16 @@ jobs:
       run: |
         python -c "import nltk; nltk.download('punkt'); nltk.download('punkt_tab'); nltk.download('stopwords'); nltk.download('wordnet')"
     
+    - name: Pre-download ML models
+      run: |
+        python -c "
+from transformers import pipeline
+import sentence_transformers
+# Download default models
+pipeline('sentiment-analysis', model='nlptown/bert-base-multilingual-uncased-sentiment')
+sentence_transformers.SentenceTransformer('all-MiniLM-L6-v2')
+"
+    
     - name: Build executable
       run: |
         python build_executable.py

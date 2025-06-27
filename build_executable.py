@@ -43,9 +43,22 @@ APP_DIR="$(dirname "$(dirname "$(dirname "$0")")")"
 # The executable is in the same directory as the .app
 EXECUTABLE_DIR="$APP_DIR"
 
+# Set up environment
+export DYLD_LIBRARY_PATH="$EXECUTABLE_DIR/_internal:$DYLD_LIBRARY_PATH"
+export PYTHONPATH="$EXECUTABLE_DIR/_internal:$PYTHONPATH"
+
 # Change to the executable directory and run
 cd "$EXECUTABLE_DIR"
-exec "./SentimentAnalysisTool"
+
+# The actual executable is in the parent directory of the .app
+REAL_EXECUTABLE="$EXECUTABLE_DIR/SentimentAnalysisTool"
+
+# Launch the executable and keep the app bundle active
+"$REAL_EXECUTABLE" &
+APP_PID=$!
+
+# Wait for the app to finish
+wait $APP_PID
 """
     
     launcher_path = os.path.join(macos_dir, "SentimentAnalysisTool")
