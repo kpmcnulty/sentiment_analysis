@@ -32,13 +32,8 @@ jobs:
     
     - name: Pre-download ML models
       run: |
-        python -c "
-from transformers import pipeline
-import sentence_transformers
-# Download default models
-pipeline('sentiment-analysis', model='nlptown/bert-base-multilingual-uncased-sentiment')
-sentence_transformers.SentenceTransformer('all-MiniLM-L6-v2')
-"
+        python -c "from transformers import pipeline; pipeline('sentiment-analysis', model='nlptown/bert-base-multilingual-uncased-sentiment')"
+        python -c "import sentence_transformers; sentence_transformers.SentenceTransformer('all-MiniLM-L6-v2')"
     
     - name: Build executable
       run: |
