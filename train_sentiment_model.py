@@ -138,6 +138,9 @@ def train_model(model_name="nlptown/bert-base-multilingual-uncased-sentiment",
     # Initialize tokenizer and model
     print("Initializing model and tokenizer...")
     
+    # Initialize latest_model
+    latest_model = None
+    
     if continue_training:
         # Find the most recent model
         model_dirs = [d for d in os.listdir(output_dir) if d.startswith("sentiment_model_")]
@@ -147,21 +150,60 @@ def train_model(model_name="nlptown/bert-base-multilingual-uncased-sentiment",
         else:
             latest_model = sorted(model_dirs)[-1]
             model_path = os.path.join(output_dir, latest_model)
+            # Convert to absolute path for transformers
+            model_path = os.path.abspath(model_path)
             print(f"Continuing training from: {model_path}")
-            tokenizer = AutoTokenizer.from_pretrained(model_path)
-            model = AutoModelForSequenceClassification.from_pretrained(model_path)
-    else:
+            
+            # Check if model files exist
+            config_file = os.path.join(model_path, "config.json")
+            model_file = os.path.join(model_path, "pytorch_model.bin")
+            
+            if not os.path.exists(config_file):
+                print(f"WARNING: config.json not found in {model_path}")
+                print("Cannot continue from this model, starting fresh")
+                continue_training = False
+                latest_model = None
+            elif not os.path.exists(model_file):
+                print(f"WARNING: pytorch_model.bin not found in {model_path}")
+                print("Cannot continue from this model, starting fresh")
+                continue_training = False
+                latest_model = None
+            else:
+                try:
+                    # Check if config has model_type
+                    with open(config_file, 'r') as f:
+                        config = json.load(f)
+                        if 'model_type' not in config:
+                            print(f"WARNING: model_type missing from config.json")
+                            print("This model appears corrupted, starting fresh")
+                            continue_training = False
+                            latest_model = None
+                        else:
+                            tokenizer = AutoTokenizer.from_pretrained(model_path)
+                            model = AutoModelForSequenceClassification.from_pretrained(model_path)
+                except Exception as e:
+                    print(f"Error loading previous model: {str(e)}")
+                    print("Falling back to base model")
+                    continue_training = False
+                    latest_model = None
+    
+    # Load base model if not continuing or if continue failed
+    if not continue_training:
         print("Starting fresh training from base model")
         tokenizer = AutoTokenizer.from_pretrained(model_name)
         model = AutoModelForSequenceClassification.from_pretrained(
             model_name,
             num_labels=5  # 5 sentiment classes
         )
-        latest_model = None  # No previous model
     
     # Create datasets with shuffling
     train_dataset = SentimentDataset(train_texts, train_labels, tokenizer, shuffle_on_init=True)
     val_dataset = SentimentDataset(val_texts, val_labels, tokenizer, shuffle_on_init=False)
+    
+    # Ensure the model config is preserved before training
+    # This prevents issues with checkpointing
+    initial_config_path = os.path.join(model_output_dir, "config.json")
+    model.config.save_pretrained(model_output_dir)
     
     # Training arguments with conservative settings for small dataset
     training_args = TrainingArguments(

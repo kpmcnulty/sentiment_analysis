@@ -79,14 +79,20 @@ class SentimentAnalysisGUI:
         self.scraper_config = self.load_config("scraper_config.json")
         self.sentiment_config = self.load_config("sentiment_config.json")
         
-        # Find and set the latest model
+        # Find and set the latest model (only if valid)
         latest_model = find_latest_model()
         if latest_model:
-            # Convert to absolute path for transformers library
+            # Check if the model has required files
             abs_model_path = os.path.abspath(latest_model)
-            print(f"Using latest trained model: {abs_model_path}")
-            self.sentiment_config['topic_modeling']['sentiment_model'] = abs_model_path
-            self.save_config(self.sentiment_config, "sentiment_config.json")
+            config_file = os.path.join(abs_model_path, "config.json")
+            model_file = os.path.join(abs_model_path, "pytorch_model.bin")
+            
+            if os.path.exists(config_file) and os.path.exists(model_file):
+                print(f"Using latest trained model: {abs_model_path}")
+                self.sentiment_config['topic_modeling']['sentiment_model'] = abs_model_path
+                self.save_config(self.sentiment_config, "sentiment_config.json")
+            else:
+                print(f"Found model directory {latest_model} but it appears incomplete, using default model")
         
         # Initialize run history
         self.run_history = self.load_run_history()
