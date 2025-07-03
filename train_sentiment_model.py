@@ -8,7 +8,6 @@ from sklearn.metrics import accuracy_score, f1_score, confusion_matrix
 import numpy as np
 from datetime import datetime
 import matplotlib.pyplot as plt
-import seaborn as sns
 
 class SentimentDataset(Dataset):
     def __init__(self, texts, labels, tokenizer, max_length=512, shuffle_on_init=True):
