@@ -224,10 +224,23 @@ def train_model(model_name="nlptown/bert-base-multilingual-uncased-sentiment",
     f1_improvement = final_metrics.get('eval_f1', 0) - baseline_metrics.get('eval_f1', 0)
     print(f"Improvement: Accuracy={accuracy_improvement:+.3f}, F1={f1_improvement:+.3f}")
     
-    # Save the model and tokenizer
+    # Save the model and tokenizer with all config
     print("Saving model...")
-    model.save_pretrained(model_output_dir)
+    # Save with safe_serialization=False to ensure compatibility
+    model.save_pretrained(model_output_dir, safe_serialization=False)
     tokenizer.save_pretrained(model_output_dir)
+    
+    # Verify config.json was created with model_type
+    config_path = os.path.join(model_output_dir, "config.json")
+    if os.path.exists(config_path):
+        with open(config_path, 'r') as f:
+            saved_config = json.load(f)
+            if 'model_type' not in saved_config:
+                print("WARNING: model_type missing from config.json")
+                # Add model_type from the original model
+                saved_config['model_type'] = model.config.model_type
+                with open(config_path, 'w') as f:
+                    json.dump(saved_config, f, indent=2)
     
     # Save training configuration with metrics
     config = {

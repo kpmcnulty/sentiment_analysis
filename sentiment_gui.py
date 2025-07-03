@@ -82,8 +82,10 @@ class SentimentAnalysisGUI:
         # Find and set the latest model
         latest_model = find_latest_model()
         if latest_model:
-            print(f"Using latest trained model: {latest_model}")
-            self.sentiment_config['topic_modeling']['sentiment_model'] = latest_model
+            # Convert to absolute path for transformers library
+            abs_model_path = os.path.abspath(latest_model)
+            print(f"Using latest trained model: {abs_model_path}")
+            self.sentiment_config['topic_modeling']['sentiment_model'] = abs_model_path
             self.save_config(self.sentiment_config, "sentiment_config.json")
         
         # Initialize run history
