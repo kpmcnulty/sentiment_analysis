@@ -1,4 +1,6 @@
 import os
+# Temporarily allow loading of .bin model files (remove after converting to safetensors)
+os.environ["TRANSFORMERS_ALLOW_UNSAFE_DESERIALIZATION"] = "1"
 import json
 import glob
 import re
