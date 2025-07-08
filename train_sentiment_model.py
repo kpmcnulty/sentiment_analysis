@@ -268,8 +268,8 @@ def train_model(model_name="nlptown/bert-base-multilingual-uncased-sentiment",
     
     # Save the model and tokenizer with all config
     print("Saving model...")
-    # Save with safe_serialization=False to ensure compatibility
-    model.save_pretrained(model_output_dir, safe_serialization=False)
+    # Save with safetensors format to avoid security issues
+    model.save_pretrained(model_output_dir, safe_serialization=True)
     tokenizer.save_pretrained(model_output_dir)
     
     # Verify config.json was created with model_type
