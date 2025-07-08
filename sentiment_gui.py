@@ -1,4 +1,6 @@
 import os
+# Allow loading of .bin model files for backward compatibility
+os.environ["TRANSFORMERS_ALLOW_UNSAFE_DESERIALIZATION"] = "1"
 import sys
 import json
 import threading
